@@ -93,11 +93,9 @@ L:
 			if len(blk.Txs) >= txLimit {
 				break L
 			}
-			//t, ok = txIter.Next()
-			//ilog.Error(ok)
+			t, ok = txIter.Next()
 		}
 	}
-	ilog.Errorf("txs in the block: %v", len(blk.Txs))
 	blk.Head.TxsHash = blk.CalculateTxsHash()
 	blk.Head.MerkleHash = blk.CalculateMerkleHash()
 	err := blk.CalculateHeadHash()

@@ -324,14 +324,13 @@ func (p *PoB) blockLoop() {
 
 func (p *PoB) scheduleLoop() {
 	nextSchedule := timeUntilNextSchedule(time.Now().UnixNano())
+	ilog.Infof("nextSchedule: %.2f", time.Duration(nextSchedule).Seconds())
 	for {
 		select {
 		case <-time.After(time.Duration(nextSchedule)):
 			ilog.Info(p.baseVariable.Mode())
 			metricsMode.Set(float64(p.baseVariable.Mode()), nil)
 			if witnessOfSec(time.Now().Unix()) == p.account.ID {
-				ilog.Error(witnessOfSec(time.Now().Unix()))
-				ilog.Error(p.account.ID)
 				if p.baseVariable.Mode() == global.ModeNormal {
 					p.txPool.Lock()
 					blk, err := generateBlock(p.account, p.txPool, p.produceDB)
@@ -340,6 +339,8 @@ func (p *PoB) scheduleLoop() {
 						ilog.Error(err.Error())
 						continue
 					}
+					ilog.Infof("gen block:%v", blk.Head.Number)
+					ilog.Debugf("block tx num: %v", len(blk.Txs))
 					p.chVerifyBlock <- &verifyBlockMessage{blk: blk, gen: true}
 					blkByte, err := blk.Encode()
 					if err != nil {
