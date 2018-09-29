@@ -70,6 +70,8 @@ func transfer(i int) {
 	action := tx.NewAction("iost.system", "Transfer", `["IOSTjBxx7sUJvmxrMiyjEQnz9h5bfNrXwLinkoL9YvWjnrGdbKnBP","IOSTgw6cmmWyiW25TMAK44N9coLCMaygx5eTfGVwjCcriEWEEjK2H",1]`)
 	acc, _ := account.NewAccount(loadBytes("5ifJUpGWJ69S2eKsKYLDcajVxrc5yZk2CD7tJ29yK6FyjAtmeboK3G4Ag5p22uZTijBP3ftEDV4ymXZF1jGqu9j4"), crypto.Ed25519)
 	trx := tx.NewTx([]*tx.Action{&action}, [][]byte{}, 1000, 1, time.Now().Add(time.Second*time.Duration(10000)).UnixNano())
+	trx.Time = 0
+	trx.Expiration = 0
 	stx, err := tx.SignTx(trx, acc)
 	if err != nil {
 		fmt.Println("signtx", stx, err)

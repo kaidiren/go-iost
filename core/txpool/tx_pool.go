@@ -223,9 +223,9 @@ func (pool *TxPImpl) verifyTx(t *tx.Tx) TAddTx {
 	if t.GasPrice <= 0 {
 		return GasPriceError
 	}
-	if pool.TxTimeOut(t) {
-		return TimeError
-	}
+	//if pool.TxTimeOut(t) {
+	//	return TimeError
+	//}
 	if err := t.VerifySelf(); err != nil {
 		return VerifyError
 	}
@@ -287,11 +287,11 @@ func (pool *TxPImpl) existTxInChain1(txHash []byte, block *block.Block) bool {
 	}
 }
 
-func (pool *TxPImpl) existTxInChain2(txHash []byte, block *block.Block) bool {
-	if block == nil {
+func (pool *TxPImpl) existTxInChain2(txHash []byte, blk *block.Block) bool {
+	if blk == nil {
 		return false
 	}
-	b, ok := pool.findBlock(block.HeadHash())
+	b, ok := pool.findBlock(blk.HeadHash())
 	if !ok {
 		return false
 	}
@@ -335,13 +335,13 @@ func (pool *TxPImpl) clearBlock() {
 }
 
 func (pool *TxPImpl) addTx(tx *tx.Tx) TAddTx {
-	h := tx.Hash()
-	if pool.existTxInChain1(h, pool.forkChain.NewHead.Block) {
-		return DupError
-	}
-	if pool.existTxInPending(h) {
-		return DupError
-	}
+	//h := tx.Hash()
+	//if pool.existTxInChain2(h, pool.forkChain.NewHead.Block) {
+	//	return DupError
+	//}
+	//if pool.existTxInPending(h) {
+	//	return DupError
+	//}
 	pool.pendingTx.Add(tx)
 	return Success
 }
@@ -352,6 +352,7 @@ func (pool *TxPImpl) existTxInPending(hash []byte) bool {
 
 // TxTimeOut time to verify the tx
 func (pool *TxPImpl) TxTimeOut(tx *tx.Tx) bool {
+	return false
 	currentTime := time.Now().UnixNano()
 	if tx.Time > currentTime {
 		return true

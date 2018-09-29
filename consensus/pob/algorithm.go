@@ -32,7 +32,6 @@ var (
 )
 
 func generateBlock(account *account.Account, txPool txpool.TxPool, db db.MVCCDB) (*block.Block, error) {
-
 	ilog.Info("generate Block start")
 	limitTime := time.NewTimer(common.SlotLength / 3 * time.Second)
 	txIter, head := txPool.TxIterator()
@@ -73,7 +72,6 @@ func generateBlock(account *account.Account, txPool txpool.TxPool, db db.MVCCDB)
 	}
 	t, ok := txIter.Next()
 	delList := []*tx.Tx{}
-	var vmExecTime, iterTime, i, j int64
 L:
 	for ok {
 		select {
@@ -81,10 +79,7 @@ L:
 			ilog.Info("time up")
 			break L
 		default:
-			i++
-			step1 := time.Now()
 			if !txPool.TxTimeOut(t) {
-				j++
 				if receipt, err := engine.Exec(t, txExecTime); err == nil {
 					blk.Txs = append(blk.Txs, t)
 					blk.Receipts = append(blk.Receipts, receipt)
@@ -98,14 +93,11 @@ L:
 			if len(blk.Txs) >= txLimit {
 				break L
 			}
-			step2 := time.Now()
-			t, ok = txIter.Next()
-			step3 := time.Now()
-			vmExecTime += step2.Sub(step1).Nanoseconds()
-			iterTime += step3.Sub(step2).Nanoseconds()
+			//t, ok = txIter.Next()
+			//ilog.Error(ok)
 		}
 	}
-
+	ilog.Errorf("txs in the block: %v", len(blk.Txs))
 	blk.Head.TxsHash = blk.CalculateTxsHash()
 	blk.Head.MerkleHash = blk.CalculateMerkleHash()
 	err := blk.CalculateHeadHash()
@@ -162,7 +154,8 @@ func verifyBlock(blk *block.Block, parent *block.Block, lib *block.Block, txPool
 	ilog.Error("start to verify tx in txpool")
 	start := time.Now()
 	for _, tx := range blk.Txs {
-		txPool.ExistTxs(tx.Hash(), parent)
+		exist := txPool.ExistTxs(tx.Hash(), parent)
+		ilog.Error(exist)
 		//exist :=
 		//if exist == txpool.FoundChain {
 		//	return errTxDup
