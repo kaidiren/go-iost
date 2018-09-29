@@ -324,28 +324,22 @@ func (p *PoB) blockLoop() {
 
 func (p *PoB) scheduleLoop() {
 	nextSchedule := timeUntilNextSchedule(time.Now().UnixNano())
-	ilog.Infof("nextSchedule: %.2f", time.Duration(nextSchedule).Seconds())
-	ilog.Errorf("staticProperty.WitnessList: %v", staticProperty.WitnessList)
 	for {
 		select {
 		case <-time.After(time.Duration(nextSchedule)):
 			ilog.Info(p.baseVariable.Mode())
-			ilog.Errorf("staticProperty.WitnessList: %v", staticProperty.WitnessList)
 			metricsMode.Set(float64(p.baseVariable.Mode()), nil)
 			if witnessOfSec(time.Now().Unix()) == p.account.ID {
 				ilog.Error(witnessOfSec(time.Now().Unix()))
 				ilog.Error(p.account.ID)
 				if p.baseVariable.Mode() == global.ModeNormal {
-					ilog.Error("go to gen block")
 					p.txPool.Lock()
 					blk, err := generateBlock(p.account, p.txPool, p.produceDB)
 					p.txPool.Release()
-					ilog.Infof("gen block:%v", blk.Head.Number)
 					if err != nil {
 						ilog.Error(err.Error())
 						continue
 					}
-					ilog.Debugf("block tx num: %v", len(blk.Txs))
 					p.chVerifyBlock <- &verifyBlockMessage{blk: blk, gen: true}
 					blkByte, err := blk.Encode()
 					if err != nil {

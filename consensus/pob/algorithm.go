@@ -27,7 +27,7 @@ var (
 	errTxDup       = errors.New("duplicate tx")
 	errTxSignature = errors.New("tx wrong signature")
 	errHeadHash    = errors.New("wrong head hash")
-	txLimit        = 10000 //limit it to 2000
+	txLimit        = 2000 //limit it to 2000
 	txExecTime     = verifier.TxExecTimeLimit / 2
 )
 
@@ -155,25 +155,22 @@ func verifyBlock(blk *block.Block, parent *block.Block, lib *block.Block, txPool
 	start := time.Now()
 	for _, tx := range blk.Txs {
 		exist := txPool.ExistTxs(tx.Hash(), parent)
-		ilog.Error(exist)
-		//exist :=
-		//if exist == txpool.FoundChain {
-		//	return errTxDup
-		//} else if exist != txpool.FoundPending {
-		//	if err := tx.VerifySelf(); err != nil {
-		//		return errTxSignature
-		//	}
-		//}
-		//if blk.Head.Time*common.SlotLength-tx.Time/1e9 > txpool.Expiration {
-		//	return errTxTooOld
-		//}
+		if exist == txpool.FoundChain {
+			return errTxDup
+		} else if exist != txpool.FoundPending {
+			if err := tx.VerifySelf(); err != nil {
+				return errTxSignature
+			}
+		}
+		if blk.Head.Time*common.SlotLength-tx.Time/1e9 > txpool.Expiration {
+			return errTxTooOld
+		}
 	}
 	avgTime := 0
 	if len(blk.Txs) != 0 {
 		avgTime = (int(time.Since(start)) / len(blk.Txs)) / 1e3
 	}
 	ilog.Errorf("avgTime: %vus", avgTime)
-
 	return verifier.VerifyBlockWithVM(blk, db)
 }
 

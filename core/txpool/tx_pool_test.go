@@ -375,6 +375,52 @@ func TestNewTxPImplB(t *testing.T) {
 
 		})
 
+		//
+		//Convey("concurrent", func() {
+		//	txCnt := 10
+		//	blockCnt := 100
+		//	bl := genNodes(accountList, witnessList, blockCnt, txCnt, true)
+		//	ch := make(chan int, 4)
+		//	//fmt.Println("genNodes impl")
+		//	go func() {
+		//		for _, bcn := range bl {
+		//			txPool.AddLinkedNode(bcn, bcn)
+		//		}
+		//		ch <- 1
+		//	}()
+		//
+		//	go func() {
+		//		for i := 0; i < 100; i++ {
+		//			t := genTx(accountList[0], Expiration)
+		//			txPool.AddTx(t)
+		//		}
+		//		ch <- 2
+		//	}()
+		//
+		//	go func() {
+		//		for i := 0; i < 10000; i++ {
+		//			txPool.PendingTxs(10000000)
+		//		}
+		//		ch <- 3
+		//	}()
+		//	////time.Sleep(5*time.Second)
+		//
+		//	t := genTx(accountList[0], Expiration)
+		//	txPool.AddTx(t)
+		//	go func() {
+		//		for i := 0; i < 10000; i++ {
+		//			txPool.ExistTxs(t.Hash(), bl[blockCnt-10].Block)
+		//		}
+		//		ch <- 4
+		//	}()
+		//
+		//	for i := 0; i < 4; i++ {
+		//		<-ch
+		//		//fmt.Println("ch :", a)
+		//	}
+		//
+		//})
+
 		stopTest(gbl)
 	})
 
