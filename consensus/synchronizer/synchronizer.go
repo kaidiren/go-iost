@@ -411,9 +411,7 @@ func (sy *SyncImpl) handleHashResp(rh *message.BlockHashResponse, peerID p2p.Pee
 		if blkInfo.Number <= sy.blockCache.LinkedRoot().Number {
 			continue
 		}
-		if _, err := sy.blockCache.Find(blkInfo.Hash); err != nil {
-			sy.dc.CreateMission(string(blkInfo.Hash), blkInfo.Number, peerID)
-		}
+		sy.dc.CreateMission(string(blkInfo.Hash), blkInfo.Number, peerID)
 	}
 }
 
