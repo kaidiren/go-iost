@@ -26,7 +26,7 @@ var (
 	errTxDup       = errors.New("duplicate tx")
 	errTxSignature = errors.New("tx wrong signature")
 	errHeadHash    = errors.New("wrong head hash")
-	txLimit        = 2000 //limit it to 2000
+	txLimit        = 20000 //limit it to 2000
 	txExecTime     = verifier.TxExecTimeLimit / 2
 )
 
