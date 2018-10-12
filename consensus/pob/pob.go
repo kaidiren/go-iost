@@ -50,7 +50,6 @@ type PoB struct {
 	blockCache      blockcache.BlockCache
 	txPool          txpool.TxPool
 	p2pService      p2p.Service
-	verifyDB        db.MVCCDB
 	produceDB       db.MVCCDB
 	blockReqMap     *sync.Map
 	exitSignal      chan struct{}
@@ -69,8 +68,7 @@ func NewPoB(account *account.Account, baseVariable global.BaseVariable, blockCac
 		blockCache:      blockCache,
 		txPool:          txPool,
 		p2pService:      p2pService,
-		verifyDB:        baseVariable.StateDB(),
-		produceDB:       baseVariable.StateDB().Fork(),
+		produceDB:       baseVariable.StateDB(),
 		blockReqMap:     new(sync.Map),
 		exitSignal:      make(chan struct{}),
 		chRecvBlock:     p2pService.Register("consensus channel", p2p.NewBlock, p2p.SyncBlockResponse),
@@ -330,24 +328,22 @@ func (p *PoB) handleRecvBlock(blk *block.Block) error {
 
 func (p *PoB) addExistingBlock(blk *block.Block, parentBlock *block.Block) error {
 	node, _ := p.blockCache.Find(blk.HeadHash())
-	ok := p.verifyDB.Checkout(string(blk.HeadHash()))
+	ok := p.produceDB.CheckTag(string(blk.HeadHash()))
 	if !ok {
-		p.verifyDB.Checkout(string(blk.Head.ParentHash))
-		err := verifyBlock(blk, parentBlock, p.blockCache.LinkedRoot().Block, p.txPool, p.verifyDB)
+		tempDB, err := p.produceDB.ForktoTag(string(blk.Head.ParentHash))
+		if err != nil {
+			return err
+		}
+		err = verifyBlock(blk, parentBlock, p.blockCache.LinkedRoot().Block, p.txPool, tempDB)
 		if err != nil {
 			ilog.Errorf("verify block failed. err=%v", err)
 			p.blockCache.Del(node)
 			return err
 		}
-		p.verifyDB.Tag(string(blk.HeadHash()))
+		tempDB.Tag(string(blk.HeadHash()))
 	}
-	h := p.blockCache.Head()
-	if node.Number > h.Number {
-		p.txPool.AddLinkedNode(node, node)
-	} else {
-		p.txPool.AddLinkedNode(node, h)
-	}
-	p.blockCache.Link(node)
+	p.txPool.AddLinkedNode(node)
+	p.blockCache.Link(node) //here	//change to sync map
 	p.updateInfo(node)
 	for child := range node.Children {
 		p.addExistingBlock(child.Block, node.Block)

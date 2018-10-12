@@ -45,16 +45,21 @@ type BlockCacheNode struct { //nolint:golint
 	ConfirmUntil int64
 	WitnessList
 	Extension []byte
+	Rwmu      *sync.RWMutex
 }
 
 func (bcn *BlockCacheNode) addChild(child *BlockCacheNode) {
 	if child != nil {
+		bcn.Rwmu.Lock()
 		bcn.Children[child] = true
+		bcn.Rwmu.Unlock()
 	}
 }
 
 func (bcn *BlockCacheNode) delChild(child *BlockCacheNode) {
+	bcn.Rwmu.Lock()
 	delete(bcn.Children, child)
+	bcn.Rwmu.Unlock()
 }
 
 func (bcn *BlockCacheNode) setParent(parent *BlockCacheNode) {

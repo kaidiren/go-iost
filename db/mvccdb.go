@@ -30,6 +30,8 @@ type MVCCDB interface {
 	Commit()
 	Rollback()
 	Checkout(t string) bool
+	CheckTag(t string) bool
+	ForktoTag(t string) (MVCCDB, error)
 	Tag(t string)
 	CurrentTag() string
 	Fork() MVCCDB
@@ -308,6 +310,27 @@ func (m *CacheMVCCDB) Checkout(t string) bool {
 	m.head = head
 	m.stage = m.head.Fork()
 	return true
+}
+
+func (m *CacheMVCCDB) CheckTag(t string) bool {
+	head := m.cm.Get(t)
+	if head == nil {
+		return false
+	}
+	return true
+}
+
+func (m *CacheMVCCDB) ForktoTag(t string) (MVCCDB, error) {
+	head := m.cm.Get(t)
+	if head == nil {
+		return nil, fmt.Errorf("fork failure")
+	}
+	return &CacheMVCCDB{
+		head:    head,
+		stage:   head.Fork(),
+		storage: m.storage,
+		cm:      m.cm,
+	}, nil
 }
 
 // Tag will add tag to current state of mvccdb
