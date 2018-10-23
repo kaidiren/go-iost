@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
-
 	"github.com/iost-official/go-iost/core/block"
 	"github.com/iost-official/go-iost/core/blockcache"
 	"github.com/iost-official/go-iost/core/global"
@@ -111,7 +110,7 @@ func (sy *SyncImpl) initializer() {
 				return
 			}
 			sy.basevariable.SetMode(global.ModeNormal)
-			sy.checkSync()
+			//sy.checkSync()
 			return
 		case <-sy.exitSignal:
 			return
@@ -125,15 +124,15 @@ func (sy *SyncImpl) syncHeightLoop() {
 	for {
 		select {
 		case <-syncHeightTicker.C:
-			num := sy.blockCache.Head().Number
-			sh := &message.SyncHeight{Height: num, Time: time.Now().Unix()}
-			bytes, err := proto.Marshal(sh)
-			if err != nil {
-				ilog.Errorf("marshal syncheight failed. err=%v", err)
-				continue
-			}
-			ilog.Infof("broadcast sync height")
-			sy.p2pService.Broadcast(bytes, p2p.SyncHeight, p2p.UrgentMessage)
+			//num := sy.blockCache.Head().Number
+			//sh := &message.SyncHeight{Height: num, Time: time.Now().Unix()}
+			//bytes, err := proto.Marshal(sh)
+			//if err != nil {
+			//	ilog.Errorf("marshal syncheight failed. err=%v", err)
+			//	continue
+			//}
+			//ilog.Infof("broadcast sync height")
+			//sy.p2pService.Broadcast(bytes, p2p.SyncHeight, p2p.UrgentMessage)
 		case req := <-sy.syncHeightChan:
 			var sh message.SyncHeight
 			err := proto.Unmarshal(req.Data(), &sh)
@@ -151,9 +150,9 @@ func (sy *SyncImpl) syncHeightLoop() {
 			ilog.Infof("sync height from: %s, height: %v, time:%v", req.From().Pretty(), sh.Height, sh.Time)
 			sy.heightMap.Store(req.From(), &sh)
 		case <-checkTicker.C:
-			sy.checkSync()
-			sy.checkGenBlock()
-			sy.CheckSyncProcess()
+			//sy.checkSync()
+			//sy.checkGenBlock()
+			//sy.CheckSyncProcess()
 		case <-sy.exitSignal:
 			syncHeightTicker.Stop()
 			checkTicker.Stop()
